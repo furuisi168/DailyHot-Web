@@ -2,25 +2,27 @@
 FROM node:20-alpine AS builder
 WORKDIR /app
 
-# 复制依赖描述文件（package.json 和 package-lock.json 如存在）
+# 复制依赖描述文件
 COPY package*.json ./
 
-# 使用 npm 安装依赖（默认执行 esbuild 构建脚本，不会出现版本冲突）
+# 安装依赖（使用 npm，避免 pnpm 的 esbuild 权限问题）
 RUN npm install
+
+# ====== 关键：设置 API 地址 ======
+# 如果你的前后端用 docker-compose 部署，推荐用服务名 api
+ENV VITE_GLOBAL_API=http://api:6688
 
 # 复制所有源代码
 COPY . .
 
-# 构建前端项目
+# 构建前端项目（此时 VITE_GLOBAL_API 会注入到代码中）
 RUN npm run build
 
 # 第二阶段：运行阶段
 FROM nginx:stable-alpine
-
-# 将构建产物复制到 nginx 默认目录
 COPY --from=builder /app/dist /usr/share/nginx/html
 
-# 自定义 nginx 配置（确保项目根目录下有 nginx.conf 文件，否则删除下一行）
+# 自定义 nginx 配置（确保项目根目录下有 nginx.conf）
 COPY nginx.conf /etc/nginx/conf.d/default.conf
 
 EXPOSE 80
