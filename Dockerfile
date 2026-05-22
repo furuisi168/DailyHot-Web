@@ -10,7 +10,7 @@ RUN npm install
 
 # ====== 关键：设置 API 地址 ======
 # 如果你的前后端用 docker-compose 部署，推荐用服务名 api
-ENV VITE_GLOBAL_API=http://api:6688
+ENV VITE_GLOBAL_API=http://ssh.mengdi520.site:6688
 
 # 复制所有源代码
 COPY . .
